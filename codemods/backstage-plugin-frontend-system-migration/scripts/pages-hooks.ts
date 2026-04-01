@@ -1,7 +1,11 @@
 import type { Edit, SgNode, Transform } from "codemod:ast-grep";
 import type TSX from "codemod:ast-grep/langs/tsx";
 import { useMetricAtom } from "codemod:metrics";
-import { CORE_PLUGIN_API, FRONTEND_PLUGIN_API } from "./lib/constants.ts";
+import {
+  CORE_PLUGIN_API,
+  FRONTEND_PLUGIN_API,
+  NFS_MIGRATION_METRIC,
+} from "./lib/constants.ts";
 import type { TsProgramRoot } from "./lib/ts-program.ts";
 
 /** Symbols that map 1:1 from core-plugin-api to frontend-plugin-api (import path only). */
@@ -16,7 +20,7 @@ const MIGRABLE_CORE_IMPORTS = new Set([
   "analyticsApiRef",
 ]);
 
-const routerAmbiguity = useMetricAtom("backstage-nfs-router-ambiguity");
+const nfsMigration = useMetricAtom(NFS_MIGRATION_METRIC);
 
 function getImportedNames(stmt: SgNode<TSX>): string[] {
   const specifiers = stmt.findAll({ rule: { kind: "import_specifier" } });
@@ -68,7 +72,12 @@ function flagInternalRouters(rootNode: TsProgramRoot, file: string): void {
     },
   });
   if (hasRoutes) {
-    routerAmbiguity.increment({ pattern: "Routes-internal-router", file });
+    nfsMigration.increment({
+      step: "pages-hooks",
+      pattern: "Routes-internal-router",
+      risk: "tricky",
+      file,
+    });
   }
 }
 

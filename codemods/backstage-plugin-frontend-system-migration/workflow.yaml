@@ -3,6 +3,7 @@
 version: "1"
 
 nodes:
+  # --- Phase 0: blast radius (metrics only) ---
   - id: inventory
     name: Blast radius (metrics only)
     type: automatic
@@ -17,6 +18,7 @@ nodes:
           exclude:
             - "**/node_modules/**"
 
+  # --- Deterministic JSSG migrations (order matches migration plan) ---
   - id: migrate-route-refs
     name: Migrate route refs
     type: automatic
@@ -26,7 +28,6 @@ nodes:
         js-ast-grep:
           js_file: scripts/route-refs.ts
           language: tsx
-          semantic_analysis: workspace
           include:
             - "**/*.ts"
             - "**/*.tsx"
@@ -42,7 +43,6 @@ nodes:
         js-ast-grep:
           js_file: scripts/plugin-shell.ts
           language: tsx
-          semantic_analysis: workspace
           include:
             - "**/plugin.ts"
             - "**/plugin.tsx"
@@ -58,7 +58,6 @@ nodes:
         js-ast-grep:
           js_file: scripts/apis.ts
           language: tsx
-          semantic_analysis: workspace
           include:
             - "**/*.ts"
             - "**/*.tsx"
@@ -80,3 +79,52 @@ nodes:
           exclude:
             - "**/node_modules/**"
 
+  # --- AI: tricky / contextual follow-ups (manual gate) ---
+  - id: ai-assisted-followups
+    name: AI-assisted tricky migrations
+    type: manual
+    depends_on: [migrate-pages-hooks]
+    steps:
+      - name: Review SubPageBlueprint, useRouteRef guards, ambiguous routes
+        ai:
+          model: "gpt-5.2-codex"
+          prompt: |
+            You are migrating a Backstage plugin to the new frontend system (NFS).
+            Focus on files that still use legacy patterns after deterministic codemods:
+            - Internal react-router Routes/Route that should become SubPageBlueprint tabs (top-level tabs only).
+            - useRouteRef results that need undefined guards for external route refs.
+            - createExternalRouteRef entries missing defaultTarget.
+            Apply minimal edits using @backstage/frontend-plugin-api and @backstage/ui.
+          system_prompt: |
+            You are an expert in Backstage frontend-plugin-api and the extension system.
+
+  # --- Optional: package manager updates lockfile + package.json (run when ready) ---
+  - id: finalize-package-dependencies
+    name: package.json and lockfile (optional)
+    type: manual
+    depends_on: [migrate-pages-hooks]
+    steps:
+      - name: Remove legacy core deps and add frontend-plugin-api
+        run: |
+          set -eu
+          ROOT="${CODEMOD_TARGET:-${CODEMOD_TARGET_PATH:-.}}"
+          cd "$ROOT"
+          test -f package.json || exit 0
+          if ! grep -qE '@backstage/core-plugin-api|@backstage/core-compat-api' package.json; then
+            exit 0
+          fi
+          PM="${CODEMOD_PACKAGE_MANAGER:-npm}"
+          case "$PM" in
+            pnpm)
+              pnpm remove @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
+              pnpm add @backstage/frontend-plugin-api@^1.0.0
+              ;;
+            yarn)
+              yarn remove @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
+              yarn add @backstage/frontend-plugin-api@^1.0.0
+              ;;
+            *)
+              npm uninstall @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
+              npm install @backstage/frontend-plugin-api@^1.0.0
+              ;;
+          esac

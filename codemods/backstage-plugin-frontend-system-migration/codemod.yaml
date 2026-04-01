@@ -2,19 +2,25 @@ schema_version: "1.0"
 
 name: "backstage-plugin-frontend-system-migration"
 version: "0.1.0"
-description: "Migrates Backstage plugins from the legacy architecture to the new frontend system using the extension-based model."
+description: "Migrate Backstage frontend plugins from the legacy core-plugin-api model to the new frontend system (frontend-plugin-api): route refs, plugin shell, APIs, page hooks, blast-radius metrics, optional AI follow-ups, and optional package.json/lockfile updates."
 author: "Alex Bit <alex@codemod.com>"
 license: "MIT"
 workflow: "workflow.yaml"
+category: "migration"
 repository: "https://github.com/alexbit-codemod/backstage-codemods"
 
 targets:
   languages: ["typescript", "tsx"]
 
-keywords: ["transformation", "migration"]
+keywords:
+  - migration
+  - backstage
+  - upgrade
+  - frontend-plugin-api
 
 registry:
   access: "public"
   visibility: "public"
 
+# JSSG transforms use the default safe module set; workflow `run` steps are executed by the CLI.
 capabilities: []

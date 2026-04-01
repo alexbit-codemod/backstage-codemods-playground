@@ -1,3 +1,6 @@
+/** Single workflow metric (`useMetricAtom`); filter by `step` (e.g. inventory vs pages-hooks). */
+export const NFS_MIGRATION_METRIC = "backstage-nfs-migration";
+
 /** Legacy package for the old Backstage frontend plugin system */
 export const CORE_PLUGIN_API = "@backstage/core-plugin-api";
 

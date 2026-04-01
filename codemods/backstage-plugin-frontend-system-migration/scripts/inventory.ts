@@ -1,16 +1,16 @@
 import type { Transform } from "codemod:ast-grep";
 import type TSX from "codemod:ast-grep/langs/tsx";
 import { useMetricAtom } from "codemod:metrics";
-import { CORE_PLUGIN_API } from "./lib/constants.ts";
+import { CORE_PLUGIN_API, NFS_MIGRATION_METRIC } from "./lib/constants.ts";
 
-const blastRadius = useMetricAtom("backstage-nfs-blast-radius");
+const nfsMigration = useMetricAtom(NFS_MIGRATION_METRIC);
 
 function record(
   pattern: string,
   risk: "safe" | "medium" | "tricky",
   file: string,
 ): void {
-  blastRadius.increment({ pattern, risk, file });
+  nfsMigration.increment({ step: "inventory", pattern, risk, file });
 }
 
 const transform: Transform<TSX> = async (root) => {
