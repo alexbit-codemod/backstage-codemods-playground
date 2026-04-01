@@ -4,8 +4,8 @@ description: >-
   Guides coding agents through the Backstage “new frontend system” (NFS) migration using
   the backstage-plugin-frontend-system-migration codemod: one workflow node runs JSSG steps
   in order (blast-radius metrics → route refs → plugin shell on plugin files only → APIs →
-  pure hook imports + router metrics); a second optional node gates AI follow-ups and
-  package.json/lockfile updates via workflow params (off by default). Use when migrating from
+  pure hook imports + router metrics), then optional AI and package.json/lockfile steps at
+  the end of the same node, gated by workflow params (off by default). Use when migrating from
   @backstage/core-plugin-api, createPlugin/createRouteRef patterns, or when the user asks
   about Backstage frontend-plugin-api, NFS migration, or this package’s workflow.
 ---
@@ -66,12 +66,11 @@ When `update_package_dependencies` is true, the workflow removes **`@backstage/c
 
 ## Workflow structure (source of truth: `workflow.yaml`)
 
-Two **automatic** nodes; the second **depends on** the first. Each node is a **single task** (sequential steps, one git checkout) so Codemod Cloud does not run parallel checkouts on the same repo (avoids `.git/index.lock` conflicts).
+One **automatic** node (`deterministic-nfs-migration`): a **single task** (sequential steps, one git checkout) so Codemod Cloud does not run parallel checkouts on the same repo (avoids `.git/index.lock` conflicts). The last two steps are optional (AI and package updates), gated by `params` (both default **false**).
 
 | Node ID | Purpose |
 |---------|---------|
-| `deterministic-nfs-migration` | Sequential JSSG: metrics → route refs → plugin shell → APIs → pages/hooks (see table below). |
-| `optional-nfs-followups` | After the first node: optional AI step and/or package install, gated by `params` (both default **false**). |
+| `deterministic-nfs-migration` | Sequential JSSG: metrics → route refs → plugin shell → APIs → pages/hooks (see table below), then optional AI and/or package steps when enabled. |
 
 ### Deterministic phase — step order and behavior
 
@@ -89,7 +88,7 @@ All steps use **js-ast-grep** with `language: tsx`. Glob scopes differ per step 
 
 ### Optional phase — AI and package updates (params, default off)
 
-**Node:** `optional-nfs-followups` (**automatic**). Runs **after** `deterministic-nfs-migration` in one sequential task.
+**Same node** as the deterministic steps (**last two steps** in `deterministic-nfs-migration`).
 
 - **`if: params.run_ai_followups == true`** — AI-assisted edits (model in `workflow.yaml`) for remaining legacy patterns: internal `Routes`/`Route` → `SubPageBlueprint` (top-level tabs), `useRouteRef` undefined guards, `createExternalRouteRef` missing `defaultTarget`. Uses `@backstage/frontend-plugin-api` and `@backstage/ui`.
 - **`if: params.update_package_dependencies == true`** — shell step: `cd` to `CODEMOD_TARGET` / `CODEMOD_TARGET_PATH` / `.`, then package-manager remove/add as above.

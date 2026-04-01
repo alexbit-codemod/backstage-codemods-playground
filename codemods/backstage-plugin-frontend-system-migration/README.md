@@ -4,14 +4,12 @@ Multi-step Codemod workflow for a **full** [Backstage new frontend system](https
 
 ## Workflow
 
-Everything lives in **[workflow.yaml](workflow.yaml)**. All nodes are **automatic**.
+Everything lives in **[workflow.yaml](workflow.yaml)**. The workflow has **one automatic node** (`deterministic-nfs-migration`) so Codemod Cloud runs a **single task** (sequential steps, one git checkout—avoids parallel `.git/index.lock` conflicts).
 
-| Node | Depends on | Purpose |
-|------|------------|---------|
-| `deterministic-nfs-migration` | — | **One task**, sequential JSSG steps: inventory metrics → route refs → plugin shell → APIs → pages/hooks (single task avoids parallel git on Codemod Cloud). |
-| `optional-nfs-followups` | `deterministic-nfs-migration` | Optional **AI** and/or **package.json + lockfile** steps, gated by [parameters](#parameters) (both **off by default**). |
-
-The deterministic phase runs as **steps inside** `deterministic-nfs-migration` (same order: `inventory.ts` → `route-refs.ts` → `plugin-shell.ts` → `apis.ts` → `pages-hooks.ts`).
+| Step group | Purpose |
+|------------|---------|
+| **Deterministic JSSG** (always) | inventory metrics → route refs → plugin shell → APIs → pages/hooks (`inventory.ts` → … → `pages-hooks.ts`). |
+| **Optional** (last two steps) | **AI** and/or **package.json + lockfile** updates, gated by [parameters](#parameters) (both **off by default**). |
 
 ## Parameters
 
@@ -51,7 +49,7 @@ npx codemod workflow run -w workflow.yaml -t /path/to/repo \
 
 ## Agent skill (Cursor / coding agents)
 
-See **[SKILL.md](SKILL.md)** for when to use this migration, how to run the workflow, and how to split deterministic JSSG steps from optional AI follow-ups.
+See **[SKILL.md](SKILL.md)** for when to use this migration, how to run the workflow, and how optional AI and package steps fit after the deterministic JSSG steps (same node).
 
 ## Development
 

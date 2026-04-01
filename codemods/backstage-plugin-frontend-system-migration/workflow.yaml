@@ -16,11 +16,11 @@ params:
       default: false
 
 nodes:
-  # All deterministic JSSG phases run as ONE workflow node (multiple steps). Codemod Cloud
-  # may schedule separate automatic nodes concurrently, which triggers parallel git checkouts
-  # on the same repo and fails with `.git/index.lock` conflicts. A single node = one task.
+  # All JSSG phases plus optional AI/package steps run as ONE workflow node (multiple steps).
+  # Codemod Cloud may schedule separate automatic nodes concurrently, which triggers parallel
+  # git checkouts on the same repo and fails with `.git/index.lock` conflicts. A single node = one task.
   - id: deterministic-nfs-migration
-    name: Deterministic NFS migration (metrics + JSSG)
+    name: NFS migration (metrics + JSSG + optional follow-ups)
     type: automatic
     steps:
       - name: Blast radius (metrics only)
@@ -73,12 +73,7 @@ nodes:
           exclude:
             - "**/node_modules/**"
 
-  # Optional AI + package steps in ONE node (sequential, single git task). Gated by params (default off).
-  - id: optional-nfs-followups
-    name: Optional AI and package updates
-    type: automatic
-    depends_on: [deterministic-nfs-migration]
-    steps:
+      # Optional: gated by params (default off). Same single task as above.
       - name: AI-assisted tricky migrations
         if: params.run_ai_followups == true
         ai:
