@@ -1,9 +1,15 @@
 import { addImport, getImport, removeImport } from "@jssg/utils/javascript/imports";
-import type { Edit, SgNode } from "codemod:ast-grep";
-import type { Transform } from "codemod:ast-grep";
+import { parse } from "codemod:ast-grep";
+import type { Edit, SgNode, SgRoot, Codemod } from "codemod:ast-grep";
 import type TSX from "codemod:ast-grep/langs/tsx";
 import { useMetricAtom } from "codemod:metrics";
-import { parseSource } from "./lib/reparse-root.ts";
+
+const TSX_LANG = "tsx";
+
+/** Re-parse source after JSX edits so import helpers see a fresh AST. */
+function parseSource(source: string): SgRoot<TSX> {
+  return parse(TSX_LANG, source) as SgRoot<TSX>;
+}
 
 const PERMISSION_REACT = "@backstage/plugin-permission-react";
 const REACT_ROUTER_DOM = "react-router-dom";
@@ -207,7 +213,7 @@ function buildReplacement(
   return `<${routeName} ${pathPart}${casePart} element={${reqInner}}>${innerBlock}</${routeName}>`;
 }
 
-const transform: Transform<TSX> = async (root) => {
+const transform: Codemod<TSX> = async (root) => {
   const rootNode = root.root();
   const fullSource = rootNode.text();
 
