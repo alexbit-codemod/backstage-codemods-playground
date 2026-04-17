@@ -6,8 +6,12 @@ import { useMetricAtom } from "codemod:metrics";
 
 const TSX_LANG = "tsx";
 
-/** Re-parse source after JSX edits so import helpers see a fresh AST. */
-function parseSource(source: string): SgRoot<TSX> {
+/**
+ * Import helpers emit edits against the current tree, so commit-and-reparse
+ * between import phases to keep subsequent lookups aligned with the latest
+ * source.
+ */
+function reparseProgram(source: string): SgRoot<TSX> {
   return parse(TSX_LANG, source) as SgRoot<TSX>;
 }
 
@@ -16,34 +20,50 @@ const REACT_ROUTER_DOM = "react-router-dom";
 
 const routesMigrated = useMetricAtom("permissioned-routes-migrated");
 
-/** @jssg/utils import helpers may glue statements; normalize for readable output. */
-function tidyImportStatements(source: string): string {
-  const withBreaks = source.replace(/;(?=import\s)/g, ";\n");
-  const lines = withBreaks.split("\n");
-  const out: string[] = [];
-  for (const line of lines) {
-    const trimmed = line.trimStart();
-    if (
-      trimmed.startsWith("import ") &&
-      !trimmed.startsWith("import type ") &&
-      trimmed.includes(" from ")
-    ) {
-      const formatted = line.replace(
-        /import\s*\{([^}]*)\}\s*from/,
-        (_m, inner: string) => {
-          const parts = inner
-            .split(",")
-            .map((s: string) => s.trim())
-            .filter((s: string) => s.length > 0);
-          return `import { ${parts.join(", ")} } from`;
-        },
-      );
-      out.push(formatted);
-    } else {
-      out.push(line);
-    }
+function formatImportStatement(importText: string): string {
+  if (importText.startsWith("import type ")) {
+    return importText;
   }
-  return out.join("\n");
+  return importText.replace(
+    /import\s*\{([^}\n]*)\}\s*from/,
+    (_m, inner: string) => {
+      const parts = inner
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter((s: string) => s.length > 0);
+      return `import { ${parts.join(", ")} } from`;
+    },
+  );
+}
+
+/**
+ * `commitEdits` can leave adjacent import statements separated only by
+ * semicolons. Reflow the import region using parsed import nodes so we only
+ * touch actual import statements and preserve comments between them.
+ */
+function normalizeImportLayout(source: string): string {
+  const program = reparseProgram(source).root();
+  const imports = program.findAll({ rule: { kind: "import_statement" } });
+  if (imports.length === 0) {
+    return source;
+  }
+
+  let out = source.slice(0, imports[0]!.range().start.index);
+  for (let index = 0; index < imports.length; index += 1) {
+    const current = imports[index]!;
+    out += formatImportStatement(current.text());
+
+    const next = imports[index + 1];
+    if (!next) {
+      out += source.slice(current.range().end.index);
+      break;
+    }
+
+    const gap = source.slice(current.range().end.index, next.range().start.index);
+    out += /^\s*$/.test(gap) ? "\n" : gap;
+  }
+
+  return out;
 }
 
 function getJsxComponentNameNode(
@@ -236,12 +256,17 @@ const transform: Codemod<TSX> = async (root) => {
   const requirePermissionAlias = requirePermissionExisting?.alias ?? "RequirePermission";
 
   const candidates: SgNode<TSX>[] = [];
-  for (const kind of ["jsx_self_closing_element", "jsx_element"] as const) {
-    for (const n of rootNode.findAll({ rule: { kind } })) {
-      const name = getJsxComponentName(n);
-      if (name === localPermissionedRoute) {
-        candidates.push(n);
-      }
+  for (const n of rootNode.findAll({
+    rule: {
+      any: [
+        { kind: "jsx_self_closing_element" },
+        { kind: "jsx_element" },
+      ],
+    },
+  })) {
+    const name = getJsxComponentName(n);
+    if (name === localPermissionedRoute) {
+      candidates.push(n);
     }
   }
 
@@ -297,12 +322,12 @@ const transform: Codemod<TSX> = async (root) => {
 
   const source = rootNode.commitEdits(jsxEdits);
 
-  let prog = parseSource(source);
+  let prog = reparseProgram(source);
   let importSource = source;
   const applyImportEdit = (edit: Edit | null): void => {
     if (!edit) return;
     importSource = prog.root().commitEdits([edit]);
-    prog = parseSource(importSource);
+    prog = reparseProgram(importSource);
   };
 
   applyImportEdit(
@@ -336,7 +361,7 @@ const transform: Codemod<TSX> = async (root) => {
     }),
   );
 
-  return tidyImportStatements(importSource).replace(/\n{3,}/g, "\n\n");
+  return normalizeImportLayout(importSource).replace(/\n{3,}/g, "\n\n");
 };
 
 export default transform;
