@@ -14,7 +14,7 @@ Community contributions are welcome. Check [open issues](https://github.com/alex
 Recommended for the smoothest experience: the CLI downloads the package from the [Codemod Registry](https://docs.codemod.com/registry).
 
 ```bash
-npx codemod@latest backstage-plugin-frontend-system-migration -t /path/to/your/target/repo
+yarn dlx codemod@latest backstage-plugin-frontend-system-migration -t /path/to/your/target/repo
 ```
 
 ### From source
@@ -22,7 +22,7 @@ npx codemod@latest backstage-plugin-frontend-system-migration -t /path/to/your/t
 Use this when developing the codemods in this repo or running a specific checkout:
 
 ```bash
-npx codemod@latest workflow run \
+yarn dlx codemod@latest workflow run \
   -w /path/to/backstage-codemods/codemods/backstage-plugin-frontend-system-migration/workflow.yaml \
   -t /path/to/your/backstage-repo
 ```

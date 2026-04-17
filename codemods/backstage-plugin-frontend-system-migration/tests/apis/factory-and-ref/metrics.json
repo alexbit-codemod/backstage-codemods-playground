@@ -2,7 +2,7 @@
   "backstage-nfs-migration": [
     {
       "cardinality": {
-        "file": "/Users/alexbit/Documents/Playground/backstage-codemods/codemods/backstage-plugin-frontend-system-migration/tests/apis/factory-and-ref/input.ts",
+        "file": "/Users/alexbit/Documents/Playground/backstage-codemods-playground/codemods/backstage-plugin-frontend-system-migration/tests/apis/factory-and-ref/input.ts",
         "pattern": "createApiFactory",
         "risk": "medium",
         "step": "inventory"
@@ -11,7 +11,7 @@
     },
     {
       "cardinality": {
-        "file": "/Users/alexbit/Documents/Playground/backstage-codemods/codemods/backstage-plugin-frontend-system-migration/tests/apis/factory-and-ref/input.ts",
+        "file": "/Users/alexbit/Documents/Playground/backstage-codemods-playground/codemods/backstage-plugin-frontend-system-migration/tests/apis/factory-and-ref/input.ts",
         "pattern": "import-core-plugin-api",
         "risk": "safe",
         "step": "inventory"

@@ -37,20 +37,20 @@ From the **target Backstage repo** (usually monorepo root or plugin package root
 **Registry / published package:**
 
 ```bash
-npx codemod run backstage-plugin-frontend-system-migration --target /path/to/repo
+yarn dlx codemod@latest backstage-plugin-frontend-system-migration -t /path/to/repo
 ```
 
 **Local package (this repository):**
 
 ```bash
 cd /path/to/backstage-codemods/codemods/backstage-plugin-frontend-system-migration
-npx codemod workflow run -w workflow.yaml -t /path/to/backstage-repo
+yarn dlx codemod@latest workflow run -w workflow.yaml -t /path/to/backstage-repo
 ```
 
 **Optional steps (off by default)** — pass workflow parameters:
 
 ```bash
-npx codemod workflow run -w workflow.yaml -t /path/to/backstage-repo \
+yarn dlx codemod@latest workflow run -w workflow.yaml -t /path/to/backstage-repo \
   --param run_ai_followups=true \
   --param update_package_dependencies=true
 ```
@@ -59,11 +59,7 @@ npx codemod workflow run -w workflow.yaml -t /path/to/backstage-repo \
 
 - `CODEMOD_TARGET` or `CODEMOD_TARGET_PATH` so `run` steps and tooling resolve the correct `package.json`.
 
-**Optional package step:** If the repo uses **pnpm** or **yarn**, set:
-
-- `CODEMOD_PACKAGE_MANAGER=pnpm` or `yarn` (default is `npm`).
-
-When `update_package_dependencies` is true, the workflow removes **`@backstage/core-plugin-api`** and **`@backstage/core-compat-api`**, then adds **`@backstage/frontend-plugin-api@^1.0.0`** (only runs if `package.json` references the legacy core packages).
+When `update_package_dependencies` is true, the workflow removes **`@backstage/core-plugin-api`** and **`@backstage/core-compat-api`**, then adds **`@backstage/frontend-plugin-api@^1.0.0`** with **Yarn** in the target repo (only runs if `package.json` references the legacy core packages).
 
 ## Workflow structure (source of truth: `workflow.yaml`)
 
@@ -106,8 +102,8 @@ The workflow runs **`scripts/unified.ts`** once per file (`language: tsx`). That
 ## Development and validation (for agents editing this package)
 
 ```bash
-npm test
-npx codemod workflow validate -w workflow.yaml
+yarn test
+yarn workspace backstage-plugin-frontend-system-migration validate
 ```
 
 ## Related files

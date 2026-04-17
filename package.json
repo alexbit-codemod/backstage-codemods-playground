@@ -4,5 +4,9 @@
   "description": "Monorepo workspace for codemods",
   "workspaces": [
     "codemods/*"
-  ]
+  ],
+  "packageManager": "yarn@4.14.0",
+  "scripts": {
+    "test": "yarn workspace backstage-plugin-frontend-system-migration test"
+  }
 }

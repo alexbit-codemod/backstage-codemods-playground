@@ -11,7 +11,7 @@ params:
       default: false
     update_package_dependencies:
       name: "Update package.json and lockfile"
-      description: "Remove legacy @backstage/core-* deps and add @backstage/frontend-plugin-api via the package manager (off by default)."
+      description: "Remove legacy @backstage/core-* deps and add @backstage/frontend-plugin-api via Yarn (off by default)."
       type: boolean
       default: false
 
@@ -58,18 +58,5 @@ nodes:
           if ! grep -qE '@backstage/core-plugin-api|@backstage/core-compat-api' package.json; then
             exit 0
           fi
-          PM="${CODEMOD_PACKAGE_MANAGER:-npm}"
-          case "$PM" in
-            pnpm)
-              pnpm remove @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
-              pnpm add @backstage/frontend-plugin-api@^1.0.0
-              ;;
-            yarn)
-              yarn remove @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
-              yarn add @backstage/frontend-plugin-api@^1.0.0
-              ;;
-            *)
-              npm uninstall @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
-              npm install @backstage/frontend-plugin-api@^1.0.0
-              ;;
-          esac
+          yarn remove @backstage/core-plugin-api @backstage/core-compat-api 2>/dev/null || true
+          yarn add @backstage/frontend-plugin-api@^1.0.0
