@@ -6,7 +6,7 @@
     "types": ["@codemod.com/jssg-types"],
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "verbatimModuleSyntax": false,
+    "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true,
     "strict": true,
     "strictNullChecks": true,
@@ -14,6 +14,6 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["scripts/**/*.ts"],
-  "exclude": ["tests", "node_modules"]
+  "include": ["../v1.50.0/backstage-permissioned-route-migration/scripts/**/*.ts"],
+  "exclude": ["../v1.50.0/backstage-permissioned-route-migration/tests", "../v1.50.0/backstage-permissioned-route-migration/node_modules"]
 }

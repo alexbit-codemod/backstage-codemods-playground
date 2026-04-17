@@ -27,6 +27,8 @@ yarn dlx codemod@latest workflow run \
   -t /path/to/your/backstage-repo
 ```
 
+For the **PermissionedRoute → RequirePermission** migration (Backstage **1.50**+), point `-w` at `codemods/v1.50.0/backstage-permissioned-route-migration/workflow.yaml` instead.
+
 By default, codemods run in the current directory. Add `-t` / `--target` with a path to run elsewhere.
 
 For CLI commands, flags, and publishing workflows, see the [Codemod CLI documentation](https://docs.codemod.com/cli).

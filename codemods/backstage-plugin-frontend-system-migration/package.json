@@ -4,9 +4,10 @@
   "description": "Migrates Backstage plugins from the legacy architecture to the new frontend system using the extension-based model.",
   "type": "module",
   "scripts": {
-    "test": "codemod jssg test -l tsx ./scripts/inventory.ts ./tests/inventory && codemod jssg test -l tsx ./scripts/unified.ts ./tests/route-refs && codemod jssg test -l tsx ./scripts/unified.ts ./tests/plugin-shell && codemod jssg test -l tsx ./scripts/unified.ts ./tests/apis && codemod jssg test -l tsx ./scripts/unified.ts ./tests/pages-hooks && codemod workflow validate -w workflow.yaml",
-    "test:inventory": "codemod jssg test -l tsx ./scripts/inventory.ts ./tests/inventory",
-    "validate": "codemod workflow validate -w workflow.yaml"
+    "test": "yarn exec codemod jssg test -l tsx ./scripts/inventory.ts ./tests/inventory && yarn exec codemod jssg test -l tsx ./scripts/unified.ts ./tests/route-refs && yarn exec codemod jssg test -l tsx ./scripts/unified.ts ./tests/plugin-shell && yarn exec codemod jssg test -l tsx ./scripts/unified.ts ./tests/apis && yarn exec codemod jssg test -l tsx ./scripts/unified.ts ./tests/pages-hooks && yarn exec codemod workflow validate -w workflow.yaml",
+    "test:inventory": "yarn exec codemod jssg test -l tsx ./scripts/inventory.ts ./tests/inventory",
+    "validate": "yarn exec codemod workflow validate -w workflow.yaml",
+    "check-types": "yarn exec tsc --noEmit"
   },
   "dependencies": {
     "@jssg/utils": "latest"

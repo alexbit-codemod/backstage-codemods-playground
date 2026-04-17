@@ -54,6 +54,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"backstage-permissioned-route-migration@workspace:codemods/v1.50.0/backstage-permissioned-route-migration":
+  version: 0.0.0-use.local
+  resolution: "backstage-permissioned-route-migration@workspace:codemods/v1.50.0/backstage-permissioned-route-migration"
+  dependencies:
+    "@codemod.com/jssg-types": "npm:latest"
+    "@jssg/utils": "npm:latest"
+    codemod: "npm:latest"
+    typescript: "npm:latest"
+  languageName: unknown
+  linkType: soft
+
 "backstage-plugin-frontend-system-migration-workspace@workspace:.":
   version: 0.0.0-use.local
   resolution: "backstage-plugin-frontend-system-migration-workspace@workspace:."
